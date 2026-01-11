@@ -1,0 +1,7 @@
+# przekierowanie wszystkiego na front_controller
+
+<IfModule mod_rewrite.c>
+ RewriteEngine On
+ RewriteCond %{REQUEST_FILENAME} !-f
+ RewriteRule ^(.*)$ front_controller.php?action=/$1 [QSA]
+</IfModule>
