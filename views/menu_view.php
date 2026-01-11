@@ -4,7 +4,7 @@
     <a href="/upload">Wyślij zdjęcie</a>
 
     <?php if (isset($_SESSION['user_id'])): ?>
-        <span style="color: #aaa; margin-left: 20px;">Witaj, <?= htmlspecialchars($_SESSION['login']) ?></span>
+        <span style="color: #aaa; margin-left: 20px;">Witaj, <?= htmlspecialchars($_SESSION['user_login']) ?></span>
         <a href="/logout" style="float: right; color: #ff9999;">Wyloguj</a>
     <?php else: ?>
         <a href="/login" style="float: right;">Logowanie</a>

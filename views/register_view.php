@@ -15,17 +15,22 @@
 <?php endif; ?>
 
 <form action="/register" method="post">
-    <label>E-mail:</label>
-    <input type="email" name="email" required>
+    <label for="email">E-mail:</label>
+    <input type="email" id="email" name="email" placeholder="Wprowadź E-mail" minlength="6" required>
 
-    <label>Login:</label>
-    <input type="text" name="login" required>
+    <label for="login">Login:</label>
+    <input type="text" id="login" name="login" placeholder="Wprowadź login" pattern="^[a-zA-Z0-9_]{3,15}$"
+           title="Login musi mieć od 3 do 15 znaków i nie może zawierać znaków specjalnych (poza podkreśleniem)."
+           required>
 
-    <label>Hasło:</label>
-    <input type="password" name="password" required>
+    <label for="password">Hasło:</label>
+    <input type="password" id="password" name="password" placeholder="Wprowadź silne hasło"
+           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+           title="Hasło musi zawierać co najmniej jedną cyfrę, jedną wielką i jedną małą literę oraz składać się z przynajmniej 8 znaków"
+           required>
 
-    <label>Powtórz hasło:</label>
-    <input type="password" name="repeat_password" required>
+    <label for="repassword">Powtórz hasło:</label>
+    <input type="password" id="repassword" name="repassword" placeholder="Powtórz hasło" required>
 
     <br><br>
     <button type="submit">Zarejestruj się</button>

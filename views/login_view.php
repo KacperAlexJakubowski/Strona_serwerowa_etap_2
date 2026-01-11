@@ -15,11 +15,11 @@
 <?php endif; ?>
 
 <form action="/login" method="post">
-    <label>Login:</label>
-    <input type="text" name="login" required>
+    <label for="login">Login:</label>
+    <input type="text" id="login" name="login" placeholder="Wprowadź swój login" required>
 
-    <label>Hasło:</label>
-    <input type="password" name="password" required>
+    <label for="password">Hasło:</label>
+    <input type="password" id="password" name="password" placeholder="Wprowadź swoje hasło" required>
 
     <br><br>
     <button type="submit">Zaloguj</button>

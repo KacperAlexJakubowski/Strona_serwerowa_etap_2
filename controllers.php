@@ -5,6 +5,14 @@ require_once 'business.php';
 
 function index(&$model)
 {
+    try {
+        $db = get_db();
+        $db->listCollections();
+
+        $model['db_message'] = "Połączenie z MongoDB udane!";
+    } catch (Exception $e) {
+        $model['db_message'] = "Połączenie z MongoDB nieudane. Kod błędu: " . $e->getMessage();
+    }
     return 'main_view';
 }
 
@@ -32,33 +40,33 @@ function upload(&$model)
 
 function register(&$model)
 {
-//    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-//        // Logika rejestracji
-//        if (register_user($_POST)) {
-//            return 'redirect:/login';
-//        }
-//        $model['error'] = 'Błąd rejestracji';
-//    }
-//    return 'register_view';
-    return 'main_view';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Logika rejestracji
+        $result = register_user($_POST, $model);
+        if ($result) {
+            return 'redirect:/login';
+        }
+        $model['error'] = "Błąd rejestracji: " . ($model['error_message'] ?? '');
+    }
+
+    return 'register_view';
 }
 
 function login(&$model)
 {
-//    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-//        if (login_user($_POST['login'], $_POST['password'])) {
-//            return 'redirect:/';
-//        }
-//        $model['error'] = 'Błędny login lub hasło';
-//    }
-//    return 'login_view';
-    return 'main_view';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $result = login_user($_POST['login'], $_POST['password']);
+        if ($result) {
+            return 'redirect:/';
+        }
+        $model['error'] = 'Błędny login lub hasło.';
+    }
+
+    return 'login_view';
 }
 
 function logout(&$model)
 {
-//    logout_user();
-//    return 'redirect:/';
-    return 'main_view';
+    logout_user();
+    return 'redirect:/';
 }
-
