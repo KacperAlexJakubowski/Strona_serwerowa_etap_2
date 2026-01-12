@@ -15,12 +15,12 @@
 <?php endif; ?>
 
 <form action="/upload" method="post" enctype="multipart/form-data">
-    <label>Tytuł zdjęcia:</label>
-    <input type="text" name="title" required>
+    <label for="title">Tytuł zdjęcia:</label>
+    <input type="text" id="title" name="title" placeholder="Wymyśl coś inspirującego" required>
 
-    <label>Autor:</label>
-    <input type="text" name="author" value="<?= $_SESSION['login'] ?? '' ?>"
-        <?= isset($_SESSION['user_id']) ? 'readonly' : '' ?> required>
+    <label for="author">Autor:</label>
+    <input type="text" id="author" name="author" value="<?= $_SESSION['user_login'] ?? '' ?>"
+           placeholder="Wprowadź nazwę autora" <?= isset($_SESSION['user_id']) ? 'readonly' : '' ?> required>
 
     <?php if (isset($_SESSION['user_id'])): ?>
         <label>

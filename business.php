@@ -2,6 +2,14 @@
 
 use MongoDB\Database;
 
+const MIME_TYPES_TO_ASSERT = [
+    'image/png',
+    'image/jpeg',
+];
+
+const KB = 1024;
+const MB = 1024 * KB;
+
 function get_db(): Database
 {
     $mongo = new MongoDB\Client(
@@ -76,4 +84,117 @@ function logout_user()
 {
     session_unset();
     session_destroy();
+}
+
+function upload_image(array $file, array $form_data, array &$model): bool
+{
+    $errors = [];
+
+    if ($file['error'] === UPLOAD_ERR_OK) {
+        $tmp_path = $file['tmp_name'];
+
+        if (!check_file_signature($tmp_path)) {
+            $errors[] = 'Próbujesz wysłać zdjęcie w innym formacie niż dopuszczalny';
+        }
+
+        $max_file_size = 1 * MB;
+
+        if ($file['size'] > $max_file_size) {
+            $errors[] = 'Przesyłane pliki nie mogą przekraczać rozmiaru 1 MB';
+        }
+
+        $upload_dir = __DIR__ . "/web/static/images/upload/";
+
+        $file_ext = (get_mime_type($tmp_path) === 'image/jpeg') ? 'jpg' : 'png';
+        $base_name = uniqid('img_') . '.' . $file_ext;
+
+        $target_path = $upload_dir . $base_name;
+
+        if (empty($errors) && move_uploaded_file($tmp_path, $target_path)) {
+            $thumbnail_target_path = $upload_dir . '/thumbnails/mini_' . $base_name;
+            create_thumbnail($target_path, $file_ext, $thumbnail_target_path, 200, 125);
+
+            $db = get_db();
+
+            $file_meta_data = [
+                'name' => $base_name,
+                'title' => $form_data['title'],
+                'author' => $form_data['author'],
+                'access' => $form_data['access'] ?? 'public',
+                'user_id' => (isset($_SESSION['user_id'])) ? $_SESSION['user_id'] : null,
+            ];
+
+            $db->images->insertOne($file_meta_data);
+
+            return true;
+        }
+
+        $model['error'] = implode("<br>", $errors);
+    }
+
+    return false;
+}
+
+function check_file_signature(string $tmp_path): bool
+{
+    $mime_type = get_mime_type($tmp_path);
+
+    if (in_array($mime_type, MIME_TYPES_TO_ASSERT, true)) {
+        return true;
+    }
+
+    return false;
+}
+
+function get_mime_type(string $tmp_path): string
+{
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime_type = finfo_file($finfo, $tmp_path);
+    finfo_close($finfo);
+
+    return $mime_type;
+}
+
+function create_thumbnail(string $source_file_path, string $source_file_ext, string $target_path, int $new_width, int $new_height): bool
+{
+    switch ($source_file_ext) {
+        case 'jpg':
+            $source_img = imagecreatefromjpeg($source_file_path);
+            break;
+        case 'png':
+            $source_img = imagecreatefrompng($source_file_path);
+            break;
+        default:
+            return false;
+    }
+
+    if (!$source_img) return false;
+
+    $source_width = imagesx($source_img);
+    $source_height = imagesy($source_img);
+
+    $dest_img = imagecreatetruecolor($new_width, $new_height);
+
+    if ($source_file_ext === 'png') {
+        imagealphablending($dest_img, false);
+        imagesavealpha($dest_img, true);
+    }
+
+    imagecopyresampled(
+        $dest_img, $source_img,
+        0, 0, 0, 0,
+        $new_width, $new_height,
+        $source_width, $source_height
+    );
+
+    if ($source_file_ext === 'jpg') {
+        imagejpeg($dest_img, $target_path, 90);
+    } elseif ($source_file_ext === 'png') {
+        imagepng($dest_img, $target_path);
+    }
+
+    imagedestroy($source_img);
+    imagedestroy($dest_img);
+
+    return true;
 }

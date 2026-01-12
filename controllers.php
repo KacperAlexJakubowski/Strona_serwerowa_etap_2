@@ -25,17 +25,15 @@ function gallery(&$model)
 
 function upload(&$model)
 {
-//    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-//        // Logika uploadu
-//        $result = upload_image($_FILES['file'], $_POST);
-//        if ($result === 'OK') {
-//            return 'redirect:/gallery';
-//        } else {
-//            $model['error'] = $result;
-//        }
-//    }
-//    return 'upload_view';
-    return 'main_view';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Logika uploadu
+        $result = upload_image($_FILES['file'], $_POST, $model);
+        if ($result) {
+            return 'redirect:/gallery';
+        }
+    }
+
+    return 'upload_view';
 }
 
 function register(&$model)
