@@ -9,6 +9,7 @@ const MIME_TYPES_TO_ASSERT = [
 
 const KB = 1024;
 const MB = 1024 * KB;
+const MAX_FILE_SIZE = 1 * MB;
 
 function get_db(): Database
 {
@@ -23,43 +24,81 @@ function get_db(): Database
     return $mongo->wai;
 }
 
-function register_user(array $form_data, array &$model): bool
+function register_user(array $form_data, array &$model, array $file): bool
 {
     $email = $form_data['email'];
     $login = $form_data['login'];
     $password = $form_data['password'];
     $repassword = $form_data['repassword'];
 
-    if (!empty($email) && !empty($login) && !empty($password) && !empty($repassword)) {
+    if (!empty($email) && !empty($login) && !empty($password) && !empty($repassword) && !empty($file)) {
         $db = get_db();
         $query = ['login' => $login];
         $existing_user = $db->users->findOne($query);
 
         if (!$existing_user) {
             if ($password === $repassword) {
-                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                if ($file['error'] === UPLOAD_ERR_OK) {
+                    $file_errors = validate_file($file);
+                    if (empty($file_errors)) {
+                        $tmp_path = $file['tmp_name'];
 
-                $new_user = [
-                    'email' => $email,
-                    'login' => $login,
-                    'hashed_password' => $hashed_password,
-                ];
+                        $upload_dir = __DIR__ . "/web/static/images/ProfilesPhoto";
 
-                $db->users->insertOne($new_user);
+                        $file_ext = (get_mime_type($tmp_path) === 'image/jpeg') ? 'jpg' : 'png';
+                        $base_name = uniqid('img_') . '.' . $file_ext;
 
-                return true;
+                        $target_path = $upload_dir . $base_name;
+
+                        create_thumbnail($tmp_path, $file_ext, $target_path, 100, 100);
+                    } else {
+                        $model['error_message'] = implode("<br>", $file_errors);
+                        return false;
+                    }
+
+                    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                    $new_user = [
+                        'email' => $email,
+                        'login' => $login,
+                        'hashed_password' => $hashed_password,
+                        'profile_photo' => $base_name,
+                    ];
+
+                    $db->users->insertOne($new_user);
+
+
+                    return true;
+                } else {
+                    $model['error_message'] = "wystąpił błąd w trakcie przesyłania pliku";
+                }
             } else {
-                $model['error_message'] = 'wprowadzone hasła się różnią';
+                $model['error_message'] = 'podane hasła różnią się';
             }
-        } else {
-            $model['error_message'] = 'użytkownik o takiej nazwie użytkownika już istnieje.';
         }
 
+        $model['error_message'] = 'użytkownik o takiej nazwie użytkownika już istnieje.';
         return false;
     }
 
     $model['error_message'] = 'nie uzupełniono wszystkich pól formularza.';
     return false;
+}
+
+function validate_file(array $file): array
+{
+    $errors = [];
+
+    $tmp_path = $file['tmp_name'];
+
+    if (!check_file_signature($tmp_path)) {
+        $errors[] = 'Próbujesz wysłać zdjęcie w innym formacie niż dopuszczalny';
+    }
+
+    if ($file['size'] > MAX_FILE_SIZE) {
+        $errors[] = 'Przesyłane pliki nie mogą przekraczać rozmiaru 1 MB';
+    }
+
+    return $errors;
 }
 
 function login_user(string $login, string $password): bool
@@ -73,6 +112,8 @@ function login_user(string $login, string $password): bool
             session_regenerate_id();
             $_SESSION['user_id'] = $user['_id'];
             $_SESSION['user_login'] = $user['login'];
+            $_SESSION['profile_photo'] = $user['profile_photo'];
+
             return true;
         }
     }
@@ -97,9 +138,7 @@ function upload_image(array $file, array $form_data, array &$model): bool
             $errors[] = 'Próbujesz wysłać zdjęcie w innym formacie niż dopuszczalny';
         }
 
-        $max_file_size = 1 * MB;
-
-        if ($file['size'] > $max_file_size) {
+        if ($file['size'] > MAX_FILE_SIZE) {
             $errors[] = 'Przesyłane pliki nie mogą przekraczać rozmiaru 1 MB';
         }
 
@@ -132,6 +171,7 @@ function upload_image(array $file, array $form_data, array &$model): bool
         $model['error'] = implode("<br>", $errors);
     }
 
+    $model['error'] = "Wystąpił błąd w trakcie przesyłania pliku";
     return false;
 }
 

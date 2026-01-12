@@ -14,7 +14,7 @@
     <p class="error"><?= $error ?></p>
 <?php endif; ?>
 
-<form action="/register" method="post">
+<form action="/register" method="post" enctype="multipart/form-data">
     <label for="email">E-mail:</label>
     <input type="email" id="email" name="email" placeholder="Wprowadź E-mail" minlength="6" required>
 
@@ -31,6 +31,9 @@
 
     <label for="repassword">Powtórz hasło:</label>
     <input type="password" id="repassword" name="repassword" placeholder="Powtórz hasło" required>
+
+    <label>Zdjęcie profilowe (JPG/PNG):</label>
+    <input type="file" name="profile_photo" required>
 
     <br><br>
     <button type="submit">Zarejestruj się</button>

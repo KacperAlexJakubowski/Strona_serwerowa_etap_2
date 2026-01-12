@@ -40,7 +40,7 @@ function register(&$model)
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Logika rejestracji
-        $result = register_user($_POST, $model);
+        $result = register_user($_POST, $model, $_FILES['profile_photo']);
         if ($result) {
             return 'redirect:/login';
         }
@@ -52,6 +52,10 @@ function register(&$model)
 
 function login(&$model)
 {
+    if (isset($_SESSION['user_id'])) {
+        return 'redirect:/';
+    }
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = login_user($_POST['login'], $_POST['password']);
         if ($result) {
