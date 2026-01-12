@@ -6,7 +6,7 @@
     <?php if (isset($_SESSION['user_id'])): ?>
         <div style="float: right; display: flex; align-items: center; gap: 10px;">
             <?php if (isset($_SESSION['profile_photo'])): ?>
-                <img src="/static/ProfilesFoto/<?= htmlspecialchars($_SESSION['profile_photo']) ?>"
+                <img src="/static/images/ProfilesPhoto/<?= htmlspecialchars($_SESSION['profile_photo']) ?>"
                      alt="Zdjęcie profilowe"
                      style="width: 40px; height: auto; border-radius: 50%;">
             <?php endif; ?>

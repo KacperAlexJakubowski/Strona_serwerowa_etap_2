@@ -1,5 +1,4 @@
 <?php
-// mapa adresów url i powiązane funkcja kontrolera
 
 $routing = [
     '/' => 'index',

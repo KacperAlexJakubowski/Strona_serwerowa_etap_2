@@ -1,32 +1,23 @@
 <?php
-// funkcje obsługujące żądania
 
 require_once 'business.php';
 
 function index(&$model)
 {
-    try {
-        $db = get_db();
-        $db->listCollections();
-
-        $model['db_message'] = "Połączenie z MongoDB udane!";
-    } catch (Exception $e) {
-        $model['db_message'] = "Połączenie z MongoDB nieudane. Kod błędu: " . $e->getMessage();
-    }
     return 'main_view';
 }
 
 function gallery(&$model)
 {
-//    $model['images'] = get_images(); // Funkcja z business.php
-//    return 'gallery_view';
-    return 'main_view';
+    $page = $_GET['page'] ?? 1;
+    $model['page'] = (int)$page;
+    $model['images'] = get_images($model['page']);
+    return 'gallery_view';
 }
 
 function upload(&$model)
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Logika uploadu
         $result = upload_image($_FILES['file'], $_POST, $model);
         if ($result) {
             return 'redirect:/gallery';
@@ -39,7 +30,6 @@ function upload(&$model)
 function register(&$model)
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Logika rejestracji
         $result = register_user($_POST, $model, $_FILES['profile_photo']);
         if ($result) {
             return 'redirect:/login';

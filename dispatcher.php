@@ -1,5 +1,4 @@
 <?php
-// renderowanie widoków
 
 const REDIRECT_PREFIX = 'redirect:';
 
